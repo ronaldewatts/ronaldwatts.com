@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/ronaldwatts.com/static/css/main.a617e044.chunk.css",
+    "main.js": "/ronaldwatts.com/static/js/main.0573f5ad.chunk.js",
+    "main.js.map": "/ronaldwatts.com/static/js/main.0573f5ad.chunk.js.map",
+    "runtime-main.js": "/ronaldwatts.com/static/js/runtime-main.158a9ca0.js",
+    "runtime-main.js.map": "/ronaldwatts.com/static/js/runtime-main.158a9ca0.js.map",
+    "static/js/2.1537640d.chunk.js": "/ronaldwatts.com/static/js/2.1537640d.chunk.js",
+    "static/js/2.1537640d.chunk.js.map": "/ronaldwatts.com/static/js/2.1537640d.chunk.js.map",
+    "static/js/3.85afa2e4.chunk.js": "/ronaldwatts.com/static/js/3.85afa2e4.chunk.js",
+    "static/js/3.85afa2e4.chunk.js.map": "/ronaldwatts.com/static/js/3.85afa2e4.chunk.js.map",
+    "index.html": "/ronaldwatts.com/index.html",
+    "static/css/main.a617e044.chunk.css.map": "/ronaldwatts.com/static/css/main.a617e044.chunk.css.map",
+    "static/js/2.1537640d.chunk.js.LICENSE.txt": "/ronaldwatts.com/static/js/2.1537640d.chunk.js.LICENSE.txt",
+    "static/media/logo.6ce24c58.svg": "/ronaldwatts.com/static/media/logo.6ce24c58.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.158a9ca0.js",
+    "static/js/2.1537640d.chunk.js",
+    "static/css/main.a617e044.chunk.css",
+    "static/js/main.0573f5ad.chunk.js"
+  ]
+}
