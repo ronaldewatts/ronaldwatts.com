@@ -30,6 +30,13 @@
             gap: 10px;
         }
 
+        .sub-controls {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
         .category-btn {
             padding: 10px 20px;
             border: none;
@@ -124,7 +131,9 @@
         <button class="category-btn" onclick="filterCategory('special-senses')">Special Senses</button>
         <button class="category-btn" onclick="filterCategory('endocrine')">Endocrine</button>
         <button class="category-btn" onclick="filterCategory('reproductive')">Reproductive</button>
+    </div>
 
+    <div class="sub-controls">
         <select id="subcategory-select" onchange="filterSubcategory()">
             <option value="all">All Subcategories</option>
         </select>
@@ -255,7 +264,7 @@
         isShuffled = true; // Update shuffle state
         shuffleCards();
     };
-    document.querySelector('.controls').appendChild(shuffleButton);
+    document.querySelector('.sub-controls').appendChild(shuffleButton);
 
     function flipCard(card) {
         card.classList.toggle('is-flipped');
