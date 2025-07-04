@@ -47,12 +47,7 @@ export default function Home() {
                                     style={{animationDelay: `${index * 100}ms`}}
                                 >
 
-                                    <h4 className="text-slate-400 text-sm mb-4 leading-relaxed">
-                                        {linkItem.description}
-                                    </h4>
-
-                                    <span
-                                        className="text-xl font-semibold text-white mb-2 hover:text-blue-400 transition-colors">
+                                    <h3 className="text-xl font-semibold text-white mb-2 hover:text-blue-400 transition-colors">
                                         <Link
                                             href={linkItem.url}
                                             target="_blank"
@@ -61,9 +56,11 @@ export default function Home() {
                                         >
                                             {linkItem.title}
                                         </Link>
-                                    </span>
+                                    </h3>
 
-
+                                    <p className="text-slate-400 text-sm mb-4 leading-relaxed">
+                                        {linkItem.description}
+                                    </p>
                                 </div>
                             ))}
                         </div>
