@@ -1,6 +1,7 @@
 {
   "name": "ronaldwatts.com",
   "homepage": "https://ronaldewatts.github.io/ronaldwatts.com/",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
