@@ -1,5 +1,7 @@
 name: publish-to-github-pages
 on:
+  workflow_dispatch:
+
   push:
     branches:
       - master
@@ -30,7 +32,7 @@ jobs:
           static_site_generator: next
 
       - name: Build with Next.js 🏗️
-        run: npx next build
+        run: npm run build
 
       - name: Upload artifact 📡
         uses: actions/upload-pages-artifact@v3
