@@ -11,8 +11,8 @@ export default function Home() {
     const links: LinkItem[] = [
         {
             title: 'UAB Fiji Plugins v1.0.0',
-            url: '/fiji-plugins/fiji-plugins-1.0.0.jar',
-            description: 'Download this plugin and install in Fiji via Plugins > Install... and restarting. The Plugins will be under the UAB main menu folder'
+            url: '/fiji-plugins/plugins/fiji-plugins-1.0.0.jar',
+            description: 'Download this plugin and install in Fiji via Plugins > Install... and restarting. The Plugins will be under the UAB main menu folder.'
         },
         {
             title: 'Fiji Projects Github',
