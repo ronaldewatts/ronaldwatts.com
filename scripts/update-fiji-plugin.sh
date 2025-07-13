@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 sourceLoc=$1
-pluginTarget=$2
-version=$3
+version=$2
+pluginTarget=$3
 localPluginSite="uab-fiji-plugins-local"
 
-cd ~/projects/ronaldwatts.com/applications/fiji/ || exit
+cd ~/applications/fiji/ || exit
 ./fiji --update remove-update-site "$localPluginSite"
 ./fiji --update update
 ./fiji --update add-update-site "$localPluginSite" "file:$pluginTarget" "file:" "$pluginTarget"
