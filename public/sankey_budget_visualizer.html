@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Money Flow Visualizer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-sankey/0.12.3/d3-sankey.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a26;
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --accent-income: #00d4aa;
+            --accent-expense: #ff6b6b;
+            --accent-neutral: #6c7aff;
+            --border-color: #2a2a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--accent-income) 0%, var(--accent-neutral) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .tab-group {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 10px 16px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: var(--accent-neutral);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        .input-section {
+            display: none;
+        }
+
+        .input-section.active {
+            display: block;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        textarea {
+            width: 100%;
+            height: 280px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            color: var(--text-primary);
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            resize: vertical;
+            transition: border-color 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent-neutral);
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 16px;
+        }
+
+        .file-upload:hover {
+            border-color: var(--accent-neutral);
+            background: rgba(108, 122, 255, 0.05);
+        }
+
+        .file-upload.dragover {
+            border-color: var(--accent-income);
+            background: rgba(0, 212, 170, 0.1);
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .file-upload-text {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .file-upload-text strong {
+            color: var(--accent-neutral);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .format-hint {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 16px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .format-hint code {
+            font-family: 'Space Mono', monospace;
+            background: var(--bg-primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent-income);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 20px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-neutral) 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 122, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            margin-top: 12px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .visualization-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            min-height: 600px;
+        }
+
+        .viz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-stats {
+            display: flex;
+            gap: 32px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .stat-value.income {
+            color: var(--accent-income);
+        }
+
+        .stat-value.expense {
+            color: var(--accent-expense);
+        }
+
+        .stat-value.net {
+            color: var(--accent-neutral);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 4px;
+        }
+
+        #sankey-chart {
+            width: 100%;
+            min-height: 500px;
+        }
+
+        .sankey-node rect {
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .sankey-node:hover rect {
+            opacity: 0.8;
+        }
+
+        .sankey-node text {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .sankey-link {
+            fill: none;
+            stroke-opacity: 0.4;
+            transition: stroke-opacity 0.2s ease;
+        }
+
+        .sankey-link:hover {
+            stroke-opacity: 0.7;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-hint {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-value {
+            font-family: 'Space Mono', monospace;
+            color: var(--accent-income);
+        }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid var(--accent-expense);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 16px;
+            color: var(--accent-expense);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1>Money Flow Visualizer</h1>
+        <p class="subtitle">See where your money comes from and where it goes</p>
+    </header>
+
+    <div class="main-grid">
+        <aside class="input-panel">
+            <div class="panel-header">
+                <span class="panel-title">Data Input</span>
+            </div>
+
+            <div class="tab-group">
+                <button class="tab active" data-tab="paste">Paste Data</button>
+                <button class="tab" data-tab="upload">Upload CSV</button>
+            </div>
+
+            <div id="paste-section" class="input-section active">
+                <label>Enter your flow data (From, To, Amount)</label>
+                <textarea id="data-input" placeholder="Salary,Budget,5000
+Freelance,Budget,1200
+Budget,Rent,1500
+Budget,Groceries,600
+Budget,Utilities,200
+Budget,Entertainment,150
+Budget,Transportation,300
+Budget,Savings,800"></textarea>
+                <div class="format-hint">
+                    Format: <code>Source,Destination,Amount</code> — one per line.<br>
+                    Use "Budget" as the central node connecting income to expenses.
+                </div>
+            </div>
+
+            <div id="upload-section" class="input-section">
+                <div class="file-upload" id="drop-zone">
+                    <div class="file-upload-icon">📁</div>
+                    <div class="file-upload-text">
+                        <strong>Click to upload</strong> or drag and drop<br>
+                        CSV file with From, To, Amount columns
+                    </div>
+                    <input type="file" id="file-input" accept=".csv">
+                </div>
+                <div class="format-hint">
+                    Expected columns: <code>From</code>, <code>To</code>, <code>Amount</code><br>
+                    Export the "Sankey Export" sheet from your budget tracker.
+                </div>
+            </div>
+
+            <div id="error-container"></div>
+
+            <button class="btn btn-primary" id="generate-btn">Generate Sankey</button>
+            <button class="btn btn-secondary" id="load-sample-btn">Load Sample Data</button>
+        </aside>
+
+        <main class="visualization-panel">
+            <div class="viz-header">
+                <span class="panel-title">Flow Visualization</span>
+                <div class="summary-stats" id="summary-stats" style="display: none;">
+                    <div class="stat">
+                        <div class="stat-value income" id="total-income">$0</div>
+                        <div class="stat-label">Total Income</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value expense" id="total-expense">$0</div>
+                        <div class="stat-label">Total Expenses</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value net" id="net-flow">$0</div>
+                        <div class="stat-label">Net Flow</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="sankey-chart">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📊</div>
+                    <div class="empty-state-text">No data to visualize yet</div>
+                    <div class="empty-state-hint">Paste your data or upload a CSV to get started</div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div class="tooltip" id="tooltip" style="display: none;"></div>
+
+<script>
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.input-section').forEach(s => s.classList.remove('active'));
+
+            tab.classList.add('active');
+            document.getElementById(`${tab.dataset.tab}-section`).classList.add('active');
+        });
+    });
+
+    // File upload handling
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = e.dataTransfer.files[0];
+        if (file) processFile(file);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) processFile(file);
+    });
+
+    function processFile(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            // Switch to paste tab and populate
+            document.querySelector('[data-tab="paste"]').click();
+
+            // Parse CSV and convert to simple format
+            const lines = text.trim().split('\n');
+            const hasHeader = lines[0].toLowerCase().includes('from') ||
+                lines[0].toLowerCase().includes('source');
+
+            const startIndex = hasHeader ? 1 : 0;
+            const converted = lines.slice(startIndex)
+                .filter(line => line.trim())
+                .map(line => {
+                    const parts = line.split(',').map(p => p.trim().replace(/"/g, ''));
+                    return parts.slice(0, 3).join(',');
+                })
+                .filter(line => {
+                    const parts = line.split(',');
+                    return parts.length >= 3 && !isNaN(parseFloat(parts[2])) && parseFloat(parts[2]) > 0;
+                })
+                .join('\n');
+
+            document.getElementById('data-input').value = converted;
+        };
+        reader.readAsText(file);
+    }
+
+    // Sample data
+    document.getElementById('load-sample-btn').addEventListener('click', () => {
+        const sampleData = `Salary,Budget,5000
+Freelance,Budget,1200
+Dividends,Budget,300
+Budget,Rent,1500
+Budget,Groceries,600
+Budget,Utilities,250
+Budget,Transportation,400
+Budget,Dining Out,350
+Budget,Entertainment,200
+Budget,Healthcare,150
+Budget,Insurance,180
+Budget,Savings,870`;
+        document.getElementById('data-input').value = sampleData;
+        document.querySelector('[data-tab="paste"]').click();
+    });
+
+    // Generate Sankey
+    document.getElementById('generate-btn').addEventListener('click', generateSankey);
+
+    function parseData(text) {
+        const lines = text.trim().split('\n').filter(line => line.trim());
+        const links = [];
+        const errors = [];
+
+        lines.forEach((line, index) => {
+            const parts = line.split(',').map(p => p.trim());
+            if (parts.length >= 3) {
+                const source = parts[0];
+                const target = parts[1];
+                const value = parseFloat(parts[2]);
+
+                if (source && target && !isNaN(value) && value > 0) {
+                    links.push({source, target, value});
+                } else if (value <= 0 || isNaN(value)) {
+                    // Skip zero/negative values silently
+                } else {
+                    errors.push(`Line ${index + 1}: Invalid format`);
+                }
+            }
+        });
+
+        return {links, errors};
+    }
+
+    function generateSankey() {
+        const errorContainer = document.getElementById('error-container');
+        errorContainer.innerHTML = '';
+
+        const inputText = document.getElementById('data-input').value;
+        if (!inputText.trim()) {
+            errorContainer.innerHTML = '<div class="error-message">Please enter some data first</div>';
+            return;
+        }
+
+        const {links, errors} = parseData(inputText);
+
+        if (links.length === 0) {
+            errorContainer.innerHTML = '<div class="error-message">No valid data found. Check your format: Source,Destination,Amount</div>';
+            return;
+        }
+
+        // Build nodes from links
+        const nodeNames = [...new Set(links.flatMap(l => [l.source, l.target]))];
+        const nodes = nodeNames.map(name => ({name}));
+
+        // Convert link names to indices
+        const indexedLinks = links.map(l => ({
+            source: nodeNames.indexOf(l.source),
+            target: nodeNames.indexOf(l.target),
+            value: l.value
+        }));
+
+        // Calculate summary stats
+        const incomeNodes = new Set(links.filter(l => l.target === 'Budget').map(l => l.source));
+        const totalIncome = links.filter(l => l.target === 'Budget').reduce((sum, l) => sum + l.value, 0);
+        const totalExpense = links.filter(l => l.source === 'Budget').reduce((sum, l) => sum + l.value, 0);
+        const netFlow = totalIncome - totalExpense;
+
+        document.getElementById('total-income').textContent = formatCurrency(totalIncome);
+        document.getElementById('total-expense').textContent = formatCurrency(totalExpense);
+        document.getElementById('net-flow').textContent = formatCurrency(netFlow);
+        document.getElementById('summary-stats').style.display = 'flex';
+
+        // Draw Sankey
+        drawSankey({nodes, links: indexedLinks}, nodeNames, incomeNodes);
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(value);
+    }
+
+    function drawSankey(data, nodeNames, incomeNodes) {
+        const container = document.getElementById('sankey-chart');
+        container.innerHTML = '';
+
+        const margin = {top: 20, right: 120, bottom: 20, left: 120};
+        const width = container.clientWidth - margin.left - margin.right;
+        const height = Math.max(500, data.nodes.length * 35) - margin.top - margin.bottom;
+
+        const svg = d3.select('#sankey-chart')
+            .append('svg')
+            .attr('width', width + margin.left + margin.right)
+            .attr('height', height + margin.top + margin.bottom)
+            .append('g')
+            .attr('transform', `translate(${margin.left},${margin.top})`);
+
+        const sankey = d3.sankey()
+            .nodeWidth(20)
+            .nodePadding(15)
+            .extent([[0, 0], [width, height]])
+            .nodeAlign(d3.sankeyCenter);
+
+        const {nodes, links} = sankey(data);
+
+        // Color scale
+        const incomeColor = '#00d4aa';
+        const expenseColor = '#ff6b6b';
+        const neutralColor = '#6c7aff';
+
+        function getNodeColor(name) {
+            if (name === 'Budget') return neutralColor;
+            if (incomeNodes.has(name)) return incomeColor;
+            return expenseColor;
+        }
+
+        // Gradient definitions for links
+        const defs = svg.append('defs');
+
+        links.forEach((link, i) => {
+            const gradient = defs.append('linearGradient')
+                .attr('id', `gradient-${i}`)
+                .attr('gradientUnits', 'userSpaceOnUse')
+                .attr('x1', link.source.x1)
+                .attr('x2', link.target.x0);
+
+            gradient.append('stop')
+                .attr('offset', '0%')
+                .attr('stop-color', getNodeColor(nodeNames[link.source.index]));
+
+            gradient.append('stop')
+                .attr('offset', '100%')
+                .attr('stop-color', getNodeColor(nodeNames[link.target.index]));
+        });
+
+        // Draw links
+        const link = svg.append('g')
+            .selectAll('.sankey-link')
+            .data(links)
+            .enter()
+            .append('path')
+            .attr('class', 'sankey-link')
+            .attr('d', d3.sankeyLinkHorizontal())
+            .attr('stroke', (d, i) => `url(#gradient-${i})`)
+            .attr('stroke-width', d => Math.max(1, d.width))
+            .on('mouseover', function (event, d) {
+                d3.select(this).attr('stroke-opacity', 0.7);
+                showTooltip(event, `${nodeNames[d.source.index]} → ${nodeNames[d.target.index]}`, d.value);
+            })
+            .on('mouseout', function () {
+                d3.select(this).attr('stroke-opacity', 0.4);
+                hideTooltip();
+            });
+
+        // Draw nodes
+        const node = svg.append('g')
+            .selectAll('.sankey-node')
+            .data(nodes)
+            .enter()
+            .append('g')
+            .attr('class', 'sankey-node');
+
+        node.append('rect')
+            .attr('x', d => d.x0)
+            .attr('y', d => d.y0)
+            .attr('height', d => Math.max(1, d.y1 - d.y0))
+            .attr('width', d => d.x1 - d.x0)
+            .attr('fill', d => getNodeColor(nodeNames[d.index]))
+            .attr('rx', 3)
+            .on('mouseover', function (event, d) {
+                showTooltip(event, nodeNames[d.index], d.value);
+            })
+            .on('mouseout', hideTooltip);
+
+        // Node labels
+        node.append('text')
+            .attr('x', d => d.x0 < width / 2 ? d.x0 - 8 : d.x1 + 8)
+            .attr('y', d => (d.y1 + d.y0) / 2)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', d => d.x0 < width / 2 ? 'end' : 'start')
+            .attr('fill', '#f0f0f5')
+            .text(d => nodeNames[d.index]);
+
+        // Value labels
+        node.append('text')
+            .attr('x', d => d.x0 < width / 2 ? d.x0 - 8 : d.x1 + 8)
+            .attr('y', d => (d.y1 + d.y0) / 2 + 14)
+            .attr('dy', '0.35em')
+            .attr('text-anchor', d => d.x0 < width / 2 ? 'end' : 'start')
+            .attr('fill', '#8888a0')
+            .attr('font-size', '11px')
+            .attr('font-family', 'Space Mono, monospace')
+            .text(d => formatCurrency(d.value));
+    }
+
+    const tooltip = document.getElementById('tooltip');
+
+    function showTooltip(event, title, value) {
+        tooltip.innerHTML = `
+                <div class="tooltip-title">${title}</div>
+                <div class="tooltip-value">${formatCurrency(value)}</div>
+            `;
+        tooltip.style.display = 'block';
+        tooltip.style.left = (event.pageX + 15) + 'px';
+        tooltip.style.top = (event.pageY - 10) + 'px';
+    }
+
+    function hideTooltip() {
+        tooltip.style.display = 'none';
+    }
+
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (document.querySelector('#sankey-chart svg')) {
+                generateSankey();
+            }
+        }, 250);
+    });
+</script>
+</body>
+</html>

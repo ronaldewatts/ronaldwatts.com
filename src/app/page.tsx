@@ -10,14 +10,9 @@ interface LinkItem {
 export default function Home() {
     const links: LinkItem[] = [
         {
-            title: 'UAB Fiji Plugins v1.0.1',
-            url: '/fiji-plugins/plugins/fiji-plugins-1.0.1.jar',
-            description: 'Download this plugin and install in Fiji via Plugins > Install... and restarting. The Plugins will be under the UAB main menu folder.'
-        },
-        {
-            title: 'UAB Fiji Plugins v1.0.0',
-            url: '/fiji-plugins/plugins/fiji-plugins-1.0.0.jar',
-            description: 'Download this plugin and install in Fiji via Plugins > Install... and restarting. The Plugins will be under the UAB main menu folder.'
+            title: 'Sankey Budget Visualizer',
+            url: '/fiji-plugins/sankey_budget_visualizer.html',
+            description: 'Sankey Budget Visualizer',
         },
         {
             title: 'Fiji Projects Github',
