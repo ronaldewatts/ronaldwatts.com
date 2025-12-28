@@ -11,7 +11,7 @@ export default function Home() {
     const links: LinkItem[] = [
         {
             title: 'Sankey Budget Visualizer',
-            url: '/fiji-plugins/sankey_budget_visualizer.html',
+            url: '/sankey_budget_visualizer.html',
             description: 'Sankey Budget Visualizer',
         },
         {
