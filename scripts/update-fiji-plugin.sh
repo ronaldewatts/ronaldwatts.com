@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+#./update-fiji-plugin.sh ~/projects/fiji-projects/target ~/projects/ronaldwatts.com/public/fiji-plugins 1.0.0
+
 sourceLoc=$1
 pluginTarget=$2
 version=$3
